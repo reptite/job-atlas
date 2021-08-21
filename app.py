@@ -168,8 +168,6 @@ def find_user_on_map(user_embedding, plot_data, user_title, user_jd):
     ).interactive()
 
     return chart
->>>>>>> origin/geoff
-
 
 
 def main():
