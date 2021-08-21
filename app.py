@@ -227,16 +227,8 @@ def main():
         if state_key == "all Australia": state_key = "AUST"
         skills = join_data(cc,vaco,state=state_key)
 
-
-
-
-
         index = 142
         # st.title(skills['ANZSCO_Title'].iloc[index])
-
-
-
-
         # skills = get_retrain_distance(skills,index)
 
         st.altair_chart( interactive_job_details(skills,index) )
