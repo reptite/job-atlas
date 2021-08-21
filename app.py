@@ -214,7 +214,7 @@ def main():
     skills = join_data(cc,vaco,state='AUST')
 
     job_titles = skills.sort_values('ANZSCO_Title').ANZSCO_Title.unique().tolist()
-    default_job_titles = job_titles.index('Electrical Engineers')
+    default_job_titles = job_titles.index('Outdoor Adventure Guides')
 
     st.sidebar.text("")
     desired_job  = st.sidebar.selectbox("Select your nearest matching job",job_titles,index=default_job_titles)
@@ -233,10 +233,10 @@ def main():
 
         # Get user input
         nltk_downloads()
-        user_title = st.text_input("Tell us your job title", value='Electrical Engineers')
+        user_title = st.text_input("Tell us your job title", value='Outdoor Adventure Guides')
         user_jd = st.text_input(
             "Give us a short description of what you do",
-            value = 'Electrical Engineers design, develop and supervise the manufacture, installation, operation and maintenance of equipment, machines and systems for the generation, distribution, utilisation and control of electric power.',
+            value = 'Outdoor Adventure Guides direct, instruct and guide individuals and groups in outdoor adventure activities such as bungy jumping, fishing and hunting, mountaineering, trekking and whitewater rafting.',
             max_chars=600
             )
         user_input = user_title + ' ' + user_jd
