@@ -124,11 +124,16 @@ def interactive_job_details(skills=None, index=None):
         alt.Y('vacancies:Q', scale=alt.Scale(type='log')),
         color=alt.condition(brush, alt.Color('vacancies:Q', scale=alt.Scale(scheme="inferno")), alt.ColorValue('gray')),
         tooltip=["ANZSCO_Title:N"],
-    ).add_selection(brush) + alt.Chart(my_skills).mark_point(size=80).encode( 
+    ).add_selection(brush) + alt.Chart(my_skills).mark_point(size=100).encode( 
         alt.X('retrain:Q', scale=alt.Scale(type='linear')),
         alt.Y('vacancies:Q', scale=alt.Scale(type='log')),
-        color=alt.ColorValue("red"),
-        tooltip=["ANZSCO_Title:N"],
+        color=alt.ColorValue('red'),
+        tooltip=['ANZSCO_Title:N'],
+    ) + alt.Chart(my_skills).mark_text(align='left',dx=8).encode(
+          alt.X('retrain:Q', scale=alt.Scale(type='linear')),
+          alt.Y('vacancies:Q', scale=alt.Scale(type='log')),
+          text='ANZSCO_Title:N',
+          color=alt.ColorValue('red')
     )
 
     c1 = c1.interactive()
@@ -197,7 +202,7 @@ def find_user_on_map(user_embedding, plot_data, user_title, user_jd):
 def main():
     st.sidebar.title('Job Atlas')
     # st.sidebar.markdown("You must unlearn what you have learned…No! Try not. Do. Or do not. There is no try.")
-    dashboards = ['Where are you now?','Where do you want to go?']
+    dashboards = ['What is your current job?','What do you want to do next?']
     dashboard = st.sidebar.selectbox("What do you want to do?", dashboards, index=0)
 
     cc,vaco = gather_data()   
@@ -213,7 +218,7 @@ def main():
     print(desired_job)
     print(desired_idx)
 
-    if dashboard == 'Where are you now?':
+    if dashboard == 'What is your current job?':
 
         st.title('Find yourself on the job map')
         # load data
@@ -240,7 +245,7 @@ def main():
         atlas = find_user_on_map(user_embedding,job_embeddings, user_title, user_jd)
         st.altair_chart(atlas)
     
-    if dashboard == 'Where do you want to go?':
+    if dashboard == 'What do you want to do next?':
 
         state_key = ['all Australia','NSW','VIC','QLD','SA','WA','TAS','NT','ACT']
         state_key = st.selectbox("Where do you want to do it?", state_key, index=0)
