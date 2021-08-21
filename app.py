@@ -110,6 +110,11 @@ def interactive_job_details(skills=None, index=None):
     skills = get_retrain_distance(skills,index)
 
     my_skills = skills.loc[[index]]
+    print("my_skills['vacancies'].iloc[0]")
+    print(my_skills['vacancies'].iloc[0])
+    if math.isnan(my_skills['vacancies'].iloc[0]):
+        my_skills['vacancies'].iloc[0] = 1
+
     dir(skills.columns[1:10])
     headers = skills.columns[1:10].tolist()
     # headers.to_native_types()
