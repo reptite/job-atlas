@@ -1,0 +1,11 @@
+.envrc
+.direnv
+.env/
+.idea/
+.pytest_cache/
+__pycache__/*
+.vscode/*
+.DS_Store
+dbconnect.txt
+secret.json
+.id
