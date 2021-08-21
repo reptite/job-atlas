@@ -1,7 +1,10 @@
 import streamlit as st
 import altair as alt
 import pandas as pd
+import numpy as np
+import math
 
+@st.cache
 def gather_data():
 
     print("gather_data")
@@ -15,6 +18,7 @@ def gather_data():
             ,sheet_name='Core_competencies'
             )
 
+    print("gather_data COMPLETE")
     return cc_data, ivi_data
 
 
@@ -48,24 +52,29 @@ def join_data(cc_data=None,ivi_data=None,state="AUST"):
 def get_retrain_distance(skills, index):
 
     print("get_distance {}".format(index))
-    delta = lambda A,B : sum([math.pow(2,a[1] - b[1])-1 for a,b in \
-                           zip(A.iteritems(),B.iteritems()) if type(a[1]) == np.int64])
+    delta = lambda A,B : sum( [math.pow(2,a[1] - b[1])-1 for a,b in \
+                               zip(A.iteritems(),B.iteritems()) if type(a[1]) == np.int64])
+
+    print("delta [0] is {}".format(delta(skills.iloc[0],skills.iloc[index])))
 
     skills['retrain'] = [ delta(a,skills.iloc[index]) for a in skills.iloc ] 
 
     return skills
 
 
-def interactive_job_map(skills=None, index=None):
+def interactive_job_details(skills=None, index=None):
 
     print("interactive_job_map {}".format(index))
     if index is None: index = 100
     if skills is None: 
         skills = join_data()
-        skills = get_retrain_distance(skills,index)
+
+    skills = get_retrain_distance(skills,index)
 
     my_skills = skills.iloc[[index]]
-    headers = skills.columns[1:10]
+    dir(skills.columns[1:10])
+    headers = skills.columns[1:10].tolist()
+    # headers.to_native_types()
 
 
     brush = alt.selection(type='multi', on='mouseover', nearest=True, resolve='global')
@@ -85,7 +94,7 @@ def interactive_job_map(skills=None, index=None):
     c1 = c1.interactive()
 
     c2 = alt.Chart(skills
-    ).transform_fold(headers.to_native_types()
+    ).transform_fold( headers
     ).mark_line().encode(
         x='key:N',
         y='value:Q',
@@ -93,7 +102,7 @@ def interactive_job_map(skills=None, index=None):
         tooltip=["ANZSCO_Title:N"],
         opacity=alt.condition(brush, alt.value(0.9), alt.value(0.02))
     ) + alt.Chart(my_skills
-    ).transform_fold(headers.to_native_types()
+    ).transform_fold( headers
     ).mark_line().encode(
         x='key:N',
         y='value:Q',
@@ -131,12 +140,12 @@ def main():
     
     if dashboard == 'another-thing':
 
-        index = 100
+        index = 142
+        st.title(skills['ANZSCO_Title'].iloc[index])
+        # skills = get_retrain_distance(skills,index)
 
-        st.altair_chart(interactive_job_map(skills,index))
-
-
-        st.title('Another Thing')
+        st.altair_chart(interactive_job_details(skills,index))
+        
         st.markdown("""
         Yadda Yadda Yadda [TBC]
         """)
