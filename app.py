@@ -7,9 +7,6 @@ import numpy as np
 import math
 
 import nltk
-nltk.download('punkt')
-nltk.download('stopwords')
-nltk.download('wordnet')
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
 from nltk.corpus import stopwords
@@ -19,6 +16,12 @@ import pickle
 import ssl
 
 wordnet_lemmatizer = WordNetLemmatizer()
+
+@st.cache
+def nltk_downloads():
+    nltk.download('punkt')
+    nltk.download('stopwords')
+    nltk.download('wordnet')
 
 
 @st.cache
@@ -182,6 +185,14 @@ def main():
     cc,vaco = gather_data()
     skills = join_data(cc,vaco,state='AUST')
 
+    job_titles = skills.sort_values('ANZSCO_Title').ANZSCO_Title.unique().tolist()
+    default_job_titles = job_titles.index('Information Officers')
+
+    st.sidebar.text("")
+    desired_job = st.sidebar.selectbox("Select your dream job",job_titles,index=default_job_titles)
+    skills_deduped = skills.drop_duplicates(subset=["ANZSCO_Code"]).copy()
+    desired_job_index = skills_deduped.index[skills_deduped.ANZSCO_Title==desired_job].tolist()[0]
+
     if dashboard == 'Where are you now?':
 
         st.title('Find yourself on the job map')
@@ -191,10 +202,11 @@ def main():
         tfidf_vectorizer = pickle.load(open('./static/tfidf_vectorizer.sav', 'rb'))
 
         # Get user input
+        nltk_downloads()
         user_title = st.text_input("Tell us your job title", value='Data Scientist')
         user_jd = st.text_input(
             "Give us a short description of what you do",
-            value = 'Use data to support and automate business decisions',
+            value = 'Use data and machine learning to support and automate business decisions. Mixture of information technology, math, and business.',
             max_chars=600
             )
         user_input = user_title + ' ' + user_jd
@@ -211,10 +223,14 @@ def main():
     if dashboard == 'Where do you want to go?':
 
         index = 142
-        st.title(skills['ANZSCO_Title'].iloc[index])
+        st.title(desired_job)
+        #st.text(desired_job_index)
         # skills = get_retrain_distance(skills,index)
 
-        st.altair_chart(interactive_job_details(skills,index))
+        st.altair_chart(interactive_job_details(skills,
+        #desired_job_index
+        index
+        ))
         
         st.markdown("""
         Yadda Yadda Yadda [TBC]
