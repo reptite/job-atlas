@@ -16,6 +16,7 @@ from nltk.corpus import stopwords
 from sklearn.feature_extraction.text import TfidfVectorizer
 import umap
 import pickle
+import ssl
 
 wordnet_lemmatizer = WordNetLemmatizer()
 
@@ -24,6 +25,8 @@ wordnet_lemmatizer = WordNetLemmatizer()
 def gather_data():
 
     print("gather_data")
+    ssl._create_default_https_context = ssl._create_unverified_context
+    
     ivi_data = pd.read_excel(
         'https://lmip.gov.au/PortalFile.axd?FieldID=2790178&.xlsx'
         ,sheet_name='4 digit 3 month average'
