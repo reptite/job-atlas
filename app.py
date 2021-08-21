@@ -89,9 +89,13 @@ def get_retrain_distance(skills, index):
     delta = lambda A,B : sum( [math.pow(2,a[1] - b[1])-1 for a,b in \
                                zip(A.iteritems(),B.iteritems()) if type(a[1]) == np.int64])
 
-    print("delta [0] is {}".format(delta(skills.iloc[0],skills.iloc[index])))
+    # print("delta [1111] is {}".format(delta(skills.loc[1111],skills.loc[index])))
+    # print("for A:")
+    # for a in skills.iloc: print(a)
+    # print(skills.loc)
+    # print("for A:")
 
-    skills['retrain'] = [ delta(a,skills.iloc[index]) for a in skills.iloc ] 
+    skills['retrain'] = [ delta(a,skills.loc[index]) for a in skills.iloc ] 
 
     return skills
 
@@ -99,13 +103,13 @@ def get_retrain_distance(skills, index):
 def interactive_job_details(skills=None, index=None):
 
     print("interactive_job_map {}".format(index))
-    if index is None: index = 100
+    if index is None: index = 5412 
     if skills is None: 
         skills = join_data()
 
     skills = get_retrain_distance(skills,index)
 
-    my_skills = skills.iloc[[index]]
+    my_skills = skills.loc[[index]]
     dir(skills.columns[1:10])
     headers = skills.columns[1:10].tolist()
     # headers.to_native_types()
@@ -196,18 +200,18 @@ def main():
     dashboards = ['Where are you now?','Where do you want to go?']
     dashboard = st.sidebar.selectbox("What do you want to do?", dashboards, index=0)
 
-    cc,vaco = gather_data()
+    cc,vaco = gather_data()   
     skills = join_data(cc,vaco,state='AUST')
 
     job_titles = skills.sort_values('ANZSCO_Title').ANZSCO_Title.unique().tolist()
     default_job_titles = job_titles.index('Information Officers')
 
     st.sidebar.text("")
-    desired_job = st.sidebar.selectbox("Select your dream job",job_titles,index=default_job_titles)
-    skills_deduped = skills.copy().drop_duplicates(subset=["ANZSCO_Code"])
-    desired_job_index = skills_deduped.index[skills_deduped.ANZSCO_Title==desired_job].tolist()[0]
+    desired_job  = st.sidebar.selectbox("Select your dream job",job_titles,index=default_job_titles)
+    desired_idx = skills.index[skills.ANZSCO_Title==desired_job].tolist()[0]
 
-    print(desired_job_index)
+    print(desired_job)
+    print(desired_idx)
 
     if dashboard == 'Where are you now?':
 
@@ -238,20 +242,16 @@ def main():
     
     if dashboard == 'Where do you want to go?':
 
-        cc,vaco = gather_data()
-
         state_key = ['all Australia','NSW','VIC','QLD','SA','WA','TAS','NT','ACT']
         state_key = st.selectbox("Where do you want to do it?", state_key, index=0)
 
         if state_key == "all Australia": state_key = "AUST"
         skills = join_data(cc,vaco,state=state_key)
 
-        index = 142
-
         # st.title(skills['ANZSCO_Title'].iloc[index])
         # skills = get_retrain_distance(skills,index)
 
-        st.altair_chart( interactive_job_details(skills,index) )
+        st.altair_chart( interactive_job_details(skills,desired_idx) )
         
 
 if __name__ == "__main__":
