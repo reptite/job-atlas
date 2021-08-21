@@ -24,16 +24,19 @@ wordnet_lemmatizer = WordNetLemmatizer()
 def gather_data():
 
     print("gather_data")
-    ivi_data = pd.read_excel(
-        'https://lmip.gov.au/PortalFile.axd?FieldID=2790178&.xlsx'
-        ,sheet_name='4 digit 3 month average'
-        )
+    # ivi_data = pd.read_excel(
+    #     'https://lmip.gov.au/PortalFile.axd?FieldID=2790178&.xlsx'
+    #     ,sheet_name='4 digit 3 month average'
+    #     )
+    # cc_data = pd.read_excel(
+    #        'https://www.nationalskillscommission.gov.au/sites/default/files/2021-07/Australian%20Skills%20Classification%2012-03-2021.xlsx'
+    #        ,sheet_name='Core_competencies'
+    #        )
 
-    cc_data = pd.read_excel(
-            'https://www.nationalskillscommission.gov.au/sites/default/files/2021-07/Australian%20Skills%20Classification%2012-03-2021.xlsx'
-            ,sheet_name='Core_competencies'
-            )
+    ivi_data = pd.read_csv('./static/IVI_vacancies_data.csv')
+    cc_data = pd.read_csv('./static/core_competencies_by_job.csv')
 
+    
     print("gather_data COMPLETE")
     return cc_data, ivi_data
 
@@ -51,16 +54,26 @@ def join_data(cc_data=None,ivi_data=None,state="AUST"):
     # Add the job titles back
     u = cc_data.drop_duplicates(subset="ANZSCO_Code")[["ANZSCO_Code","ANZSCO_Title"]]
     skills = skills.join(u.set_index("ANZSCO_Code"))
+    # print(skills)
 
     # Get also the most recent vacencies data
 
     u = ivi_data.loc[ivi_data['state'] == state].iloc[:, [0]+[-1]]
     u = u.rename(columns={u.columns[0]:"ANZSCO_Code", u.columns[1]:"vacancies"})
-    u = u.drop_duplicates(subset="ANZSCO_Code")
+    u["ANZSCO_Code"] = pd.to_numeric(u["ANZSCO_Code"],errors="coerce")
+    u["vacancies"] = pd.to_numeric(u["vacancies"],errors="coerce")
+    u = u.drop_duplicates(subset="ANZSCO_Code").set_index("ANZSCO_Code")
 
-    skills = skills.join(u.set_index("ANZSCO_Code"))
-    
+    # print(u.index[0].__class__)
+    # print(skills.index[0].__class__)
+    # print(u)
+    # print(skills)
+
+    skills = skills.join(u,on="ANZSCO_Code")
     print("join_data COMPLETE")
+
+    # print(skills.isna().sum())
+
     return skills
 
 
@@ -92,6 +105,8 @@ def interactive_job_details(skills=None, index=None):
     headers = skills.columns[1:10].tolist()
     # headers.to_native_types()
 
+    skills = skills[skills["vacancies"] > 0]
+    
 
     brush = alt.selection(type='multi', on='mouseover', nearest=True, resolve='global')
 
@@ -175,10 +190,7 @@ def main():
     # st.sidebar.markdown("You must unlearn what you have learned…No! Try not. Do. Or do not. There is no try.")
     dashboards = ['Where are you now?','Where do you want to go?']
     dashboard = st.sidebar.selectbox("What do you want to do?", dashboards, index=0)
-
-    cc,vaco = gather_data()
-    skills = join_data(cc,vaco,state='AUST')
-
+    
     if dashboard == 'Where are you now?':
 
         st.title('Find yourself on the job map')
@@ -207,11 +219,27 @@ def main():
     
     if dashboard == 'Where do you want to go?':
 
+        cc,vaco = gather_data()
+
+        state_key = ['all Australia','NSW','VIC','QLD','SA','WA','TAS','NT','ACT']
+        state_key = st.selectbox("Where do you want to do it?", state_key, index=0)
+
+        if state_key == "all Australia": state_key = "AUST"
+        skills = join_data(cc,vaco,state=state_key)
+
+
+
+
+
         index = 142
-        st.title(skills['ANZSCO_Title'].iloc[index])
+        # st.title(skills['ANZSCO_Title'].iloc[index])
+
+
+
+
         # skills = get_retrain_distance(skills,index)
 
-        st.altair_chart(interactive_job_details(skills,index))
+        st.altair_chart( interactive_job_details(skills,index) )
         
         st.markdown("""
         Yadda Yadda Yadda [TBC]
