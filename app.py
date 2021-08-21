@@ -119,12 +119,12 @@ def interactive_job_details(skills=None, index=None):
 
     brush = alt.selection(type='multi', on='mouseover', nearest=True, resolve='global')
 
-    c1 = alt.Chart(skills).mark_point().encode( 
+    c1 = alt.Chart(skills).mark_point(size=20).encode( 
         alt.X('retrain:Q', scale=alt.Scale(type='linear')),
         alt.Y('vacancies:Q', scale=alt.Scale(type='log')),
         color=alt.condition(brush, alt.Color('vacancies:Q', scale=alt.Scale(scheme="inferno")), alt.ColorValue('gray')),
         tooltip=["ANZSCO_Title:N"],
-    ).add_selection(brush) + alt.Chart(my_skills).mark_point().encode( 
+    ).add_selection(brush) + alt.Chart(my_skills).mark_point(size=80).encode( 
         alt.X('retrain:Q', scale=alt.Scale(type='linear')),
         alt.Y('vacancies:Q', scale=alt.Scale(type='log')),
         color=alt.ColorValue("red"),
